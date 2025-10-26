@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحليل نظام ديباج لإدارة شركات الغزل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Icon library (font-awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        html { scroll-behavior: smooth; }
+        /* Cairo font with Black weight (900) for main titles */
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; } 
+        
+        /* Custom Logo SVG Styling (Thread and Control) */
+        .dibag-logo {
+            width: 30px;
+            height: 30px;
+            margin-left: 8px;
+        }
+
+        /* Workflow Step Card Styling */
+        .step-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            min-height: 120px; /* Ensure consistent height for 6 steps layout */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .step-card.active {
+            border-color: #10b981; /* Emerald-500 */
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(16 185 129 / 0.3);
+        }
+        .step-card-connector {
+            flex-grow: 1;
+            height: 2px;
+            background-color: #cbd5e1;
+            min-width: 20px;
+        }
+        
+        /* Tabs Styling */
+        .tab-button.active {
+            border-color: #0d6efd; /* Stronger Blue */
+            background-color: #f0f8ff; /* Very Light Blue */
+            color: #0d6efd;
+            font-weight: 800;
+            border-bottom-width: 4px;
+        }
+        .tab-button {
+            transition: all 0.2s ease;
+            font-size: 1.1rem;
+            padding: 1rem 1.25rem;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Styling for "نقطة التميُّز" */
+        .highlight-item {
+            color: #b45309; /* Deep Amber/Brown for high contrast */
+            font-weight: 700;
+            background-color: #fef3c7; /* Light Amber Background */
+            border: 1px solid #fcd34d; /* Amber border */
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        /* Style for the workflow impact highlight item */
+        .workflow-highlight-item {
+            color: #10b981; /* Emerald for differentiation */
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+            <!-- العنوان البارز مع الأيقونة الجديدة (SVG) -->
+            <h1 class="text-3xl font-black text-blue-900 pb-1 border-b-4 border-amber-400/70 transition duration-300 cursor-default flex items-center">
+                <!-- الأيقونة المخصصة الجديدة: رمز خيط الغزل المتقن مع علامة الرقابة/التحليل -->
+                <svg class="dibag-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
+                    <!-- Noto: A yarn spool/textile icon (Simplified) -->
+                    <path fill="#10b981" d="M384 112v288c0 22.1-17.9 40-40 40H80c-22.1 0-40-17.9-40-40V112c0-22.1 17.9-40 40-40h264c22.1 0 40 17.9 40 40zM352 144H64v224c0 8.8 7.2 16 16 16h264c8.8 0 16-7.2 16-16V144zM536 128c11 0 20-9 20-20V48c0-11-9-20-20-20h-8c-11 0-20 9-20 20v28c-11 0-20 9-20 20s9 20 20 20v340c0 11 9 20 20 20h8c11 0 20-9 20-20V128z"/>
+                    <!-- Chart/Control Overlay (Simplified check mark on top of the spool) -->
+                    <path fill="#2563eb" d="M416 192c0 22.1-17.9 40-40 40h-8c-22.1 0-40-17.9-40-40s17.9-40 40-40h8c22.1 0 40 17.9 40 40zm-128 0c0-22.1 17.9-40 40-40h8c22.1 0 40 17.9 40 40s-17.9 40-40 40h-8c-22.1 0-40-17.9-40-40zm192 64c0 22.1-17.9 40-40 40h-8c-22.1 0-40-17.9-40-40s17.9-40 40-40h8c22.1 0 40 17.9 40 40z"/>
+                    <!-- Small check/control element -->
+                    <path fill="#f59e0b" d="M448 352c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h256c17.7 0 32 14.3 32 32v192zm-99-96l-78.1 78.1c-4.7 4.7-12.3 4.7-17 0L192 272.9l-25.5 25.5c-4.7 4.7-12.3 4.7-17 0s-4.7-12.3 0-17l34.9-34.9c4.7-4.7 12.3-4.7 17 0L294 304.9l85.1-85.1c4.7-4.7 12.3-4.7 17 0s4.7 12.3 0 17z"/>
+                </svg>
+                نظام ديباج
+            </h1>
+            
+            <!-- الروابط -->
+            <div class="flex items-center text-sm sm:text-lg">
+                <a href="#about" class="font-medium text-slate-600 hover:text-emerald-600 nav-link">من نحن</a>
+                <span class="font-medium text-slate-400 mx-3 sm:mx-4">|</span>
+                <a href="#workflow" class="font-medium text-slate-600 hover:text-emerald-600 nav-link">خطوات العمل</a>
+                <span class="font-medium text-slate-400 mx-3 sm:mx-4">|</span>
+                <a href="#modules" class="font-medium text-slate-600 hover:text-emerald-600 nav-link">ميزات النظام</a>
+                <span class="font-medium text-slate-400 mx-3 sm:mx-4">|</span>
+                <a href="#pricing" class="font-medium text-slate-600 hover:text-emerald-600 nav-link">خطط الأسعار</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+
+        <!-- Introduction - التنسيق الجديد والمحسن للوضوح -->
+        <section id="intro" class="text-center mb-16 p-8 bg-white rounded-2xl shadow-2xl border-b-4 border-blue-600">
+            <h2 class="text-5xl font-extrabold mb-5 text-slate-900 leading-snug">
+                الحل المتكامل <span class="text-emerald-600">لإدارة وتكاليف</span> شركات الغزل
+            </h2>
+            <p class="text-2xl text-slate-700 max-w-5xl mx-auto font-medium">
+                اكتشف التكامل الكامل <span class="text-blue-600 font-bold">لدورة التشغيل</span> (الإنتاج والمبيعات) مع <span class="text-red-600 font-bold">الربط المحاسبي اللحظي</span>، مدعوماً بتحليل دقيق ومخصص لأداء التكاليف والرقابة الاستراتيجية.
+            </p>
+        </section>
+        
+        <!-- ⭐️ Section: About Us (من نحن) - تم الاحتفاظ بالأيقونات الجيدة هنا -->
+        <section id="about" class="mb-20">
+            <!-- العنوان الرئيسي: من نحن - المزايا التنافسية -->
+            <h2 class="text-4xl font-black text-center mb-12 text-blue-900">
+                <span class="pb-2 border-b-4 border-amber-400/70 inline-block">
+                    ⭐️ من نحن؟ (لماذا نظام ديباج هو الأفضل لشركتك)
+                </span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Card 1: تخصص الصناعة -->
+                <div class="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-blue-600 hover:shadow-3xl transition duration-300 transform hover:-translate-y-1">
+                    <div class="text-5xl text-blue-600 mb-4"><i class="fas fa-screwdriver-wrench"></i></div>
+                    <h3 class="text-xl font-extrabولد mb-3 text-slate-900">1. تخصص دقيق في صناعة الغزل</h3>
+                    <p class="text-slate-600">النظام ليس عاماً؛ بل هو مصمم خصيصاً ليناسب طبيعة **المخلوطات**، التكاليف المرجحة، وتتبع شكائر المنتج التام (Bag ID) بدقة متناهية.</p>
+                </div>
+
+                <!-- Card 2: أتمتة محاسبية كاملة -->
+                <div class="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-emerald-600 hover:shadow-3xl transition duration-300 transform hover:-translate-y-1">
+                    <div class="text-5xl text-emerald-600 mb-4"><i class="fas fa-receipt"></i></div>
+                    <h3 class="text-xl font-extrabولد mb-3 text-slate-900">2. أتمتة محاسبية وقرارات فورية</h3>
+                    <p class="text-slate-600">توليد **قيود يومية آلية** لكل حركة (سحب خامات، إنتاج، مبيعات). يقلل الأخطاء البشرية ويوفر قوائم مالية لحظية دون انتظار.</p>
+                </div>
+                
+                <!-- Card 3: التتبع والرقابة المتقدمة -->
+                <div class="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-amber-600 hover:shadow-3xl transition duration-300 transform hover:-translate-y-1">
+                    <div class="text-5xl text-amber-600 mb-4"><i class="fas fa-hand-holding-dollar"></i></div>
+                    <h3 class="text-xl font-extrabولد mb-3 text-slate-900">3. رقابة متكاملة للسيولة والشيكات</h3>
+                    <p class="text-slate-600">نظام متقدم لإدارة الشيكات المرفوضة/المرتدة بـ **قيود عكس آلية**، بالإضافة إلى تقارير تنبؤ السيولة لتجنب أي تعثر مالي مستقبلي.</p>
+                </div>
+                
+            </div>
+        </section>
+
+        <!-- 🏭 Interactive Workflow Section (خطوات العمل) - الأيقونات الجديدة والمحتوى المحسن -->
+        <section id="workflow" class="mb-20">
+            <!-- العنوان الرئيسي: خطوات العمل -->
+            <h2 class="text-4xl font-black text-center mb-10 text-blue-900">
+                <span class="pb-2 border-b-4 border-amber-400/70 inline-block">
+                    🏭 دورة التشغيل المتكاملة (6 خطوات أساسية)
+                </span>
+            </h2>
+            <p class="text-center text-slate-600 mb-12 max-w-3xl mx-auto">
+                تعرض هذه الخطوات المتتابعة دورة العمل داخل النظام، بدءاً من شراء الخامات وانتهاءً بالقبض والصرف المالي.
+            </p>
+
+            <!-- Workflow Steps Cards (6 Steps Horizontal/Vertical Layout) -->
+            <div class="flex flex-col sm:flex-row items-center justify-center mb-10 overflow-x-auto pb-4 gap-2">
+                
+                <!-- Step 1: تسجيل مشتريات الخامات -->
+                <div class="flex-shrink-0 w-48 text-center">
+                    <div class="step-card bg-white p-5 rounded-lg shadow-lg cursor-pointer border-2 border-emerald-500 active" data-step="procurement">
+                        <span class="text-4xl text-gray-700"><i class="fas fa-box-open"></i></span>
+                        <h3 class="font-bold mt-2 text-lg">1. تسجيل مشتريات الخامات</h3>
+                    </div>
+                </div>
+                
+                <div class="step-card-connector w-2 h-8 sm:w-auto sm:h-2"></div>
+
+                <!-- Step 2: أوامر التشغيل وتحديد الخلطة -->
+                <div class="flex-shrink-0 w-48 text-center">
+                    <div class="step-card bg-white p-5 rounded-lg shadow-lg cursor-pointer" data-step="production_order">
+                        <span class="text-4xl text-gray-700"><i class="fas fa-flask"></i></span>
+                        <h3 class="font-bold mt-2 text-lg">2. أوامر التشغيل وتحديد الخلطة</h3>
+                    </div>
+                </div>
+
+                <div class="step-card-connector w-2 h-8 sm:w-auto sm:h-2"></div>
+
+                <!-- Step 3: تسجيل الإنتاج وحساب التكلفة -->
+                <div class="flex-shrink-0 w-48 text-center">
+                    <div class="step-card bg-white p-5 rounded-lg shadow-lg cursor-pointer" data-step="production_record">
+                        <span class="text-4xl text-gray-700"><i class="fas fa-money-bill-wave"></i></span>
+                        <h3 class="font-bold mt-2 text-lg">3. تسجيل الإنتاج وحساب التكلفة</h3>
+                    </div>
+                </div>
+                
+                <div class="step-card-connector w-2 h-8 sm:w-auto sm:h-2"></div>
+
+                <!-- Step 4: إنشاء فواتير المبيعات -->
+                <div class="flex-shrink-0 w-48 text-center">
+                    <div class="step-card bg-white p-5 rounded-lg shadow-lg cursor-pointer" data-step="sales">
+                        <span class="text-4xl text-gray-700"><i class="fas fa-cart-shopping"></i></span>
+                        <h3 class="font-bold mt-2 text-lg">4. إنشاء فواتير المبيعات</h3>
+                    </div>
+                </div>
+                
+                <div class="step-card-connector w-2 h-8 sm:w-auto sm:h-2"></div>
+
+                <!-- Step 5: سندات القبض والصرف -->
+                <div class="flex-shrink-0 w-48 text-center">
+                    <div class="step-card bg-white p-5 rounded-lg shadow-lg cursor-pointer" data-step="receipt_payment">
+                        <span class="text-4xl text-gray-700"><i class="fas fa-shuffle"></i></span>
+                        <h3 class="font-bold mt-2 text-lg">5. سندات القبض والصرف</h3>
+                    </div>
+                </div>
+                
+                <div class="step-card-connector w-2 h-8 sm:w-auto sm:h-2"></div>
+
+                <!-- Step 6: المصروفات والرواتب -->
+                <div class="flex-shrink-0 w-48 text-center">
+                    <div class="step-card bg-white p-5 rounded-lg shadow-lg cursor-pointer" data-step="expenses_payroll">
+                        <span class="text-4xl text-gray-700"><i class="fas fa-briefcase"></i></span>
+                        <h3 class="font-bold mt-2 text-lg">6. المصروفات والرواتب</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflow Details Pane -->
+            <div id="workflow-details-pane" class="bg-white p-8 rounded-xl shadow-2xl min-h-[300px] transition-all duration-300 border-t-4 border-emerald-500">
+                <!-- JS will populate this -->
+            </div>
+        </section>
+
+        <!-- 🧭 Key Modules Section (ميزات النظام) - أيقونات جديدة -->
+        <section id="modules" class="mb-20">
+            <!-- العنوان الرئيسي: ميزات النظام -->
+            <h2 class="text-4xl font-black text-center mb-10 text-blue-900">
+                <span class="pb-2 border-b-4 border-amber-400/70 inline-block">
+                    🧭 ميزات النظام (الوحدات التخصصية والرقابية)
+                </span>
+            </h2>
+            
+            <!-- Tabs Navigation -->
+            <div class="flex flex-wrap justify-center border-b-2 border-slate-300 mb-6 gap-3 p-2 bg-white rounded-t-xl shadow-inner">
+                <button class="tab-button text-lg font-semibold py-3 px-6 border-b-4 active" data-tab="master-data"><i class="fas fa-database ml-2"></i>البيانات الأساسية</button>
+                <button class="tab-button text-lg font-semibold py-3 px-6 border-b-4 border-transparent text-slate-500 hover:text-blue-500" data-tab="production-control"><i class="fas fa-boxes-packing ml-2"></i>الإنتاج والمخزون</button>
+                <button class="tab-button text-lg font-semibold py-3 px-6 border-b-4 border-transparent text-slate-500 hover:text-blue-500" data-tab="financial-control"><i class="fas fa-money-check-alt ml-2"></i>النقد والشيكات</button>
+                <button class="tab-button text-lg font-semibold py-3 px-6 border-b-4 border-transparent text-slate-500 hover:text-blue-500" data-tab="accounting-structure"><i class="fas fa-chart-line ml-2"></i>المالية والميزانية</button>
+                <!-- ⭐️ تم تغيير النص والأيقونة هنا: الموارد البشرية والمهام -->
+                <button class="tab-button text-lg font-semibold py-3 px-6 border-b-4 border-transparent text-slate-500 hover:text-blue-500" data-tab="management-reports"><i class="fas fa-users-gear ml-2"></i>الموارد البشرية والمهام</button>
+            </div>
+
+            <!-- Tabs Content -->
+            <div class="bg-white p-8 rounded-b-xl shadow-2xl border-b-4 border-blue-600">
+                
+                <!-- Tab 1: System Core & Master Data (البيانات الأساسية) -->
+                <div id="tab-master-data" class="tab-content active">
+                    <h3 class="text-2xl font-bold mb-6 text-slate-800 flex items-center"><i class="fas fa-cogs ml-3 text-gray-500"></i>1. البيانات الأساسية (Core System & Setup)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Item: هيكلة الصلاحيات والحوكمة -->
+                        <div class="bg-gray-50 p-4 rounded-lg border-r-4 border-gray-400">
+                            <p class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-shield-alt text-blue-600 ml-2"></i>هيكلة الصلاحيات والحوكمة</p>
+                            <p class="text-sm text-slate-600 mb-2">تعريف الشركاء، الأقسام، وتطبيق مفهوم **الحوكمة الرقمية** وتحديد الصلاحيات (RBAC).</p>
+                            <p><span class="highlight-item">نقطة التميُّز:</span> **الأمان المُحكم:** ضمان أن كل مستخدم يرى فقط ما يحق له رؤيته وتتبع التعديلات (Audit Trail).</p>
+                        </div>
+                        <!-- Item: إدارة الذمم المدينة والدائنة -->
+                        <div class="bg-gray-50 p-4 rounded-lg border-r-4 border-gray-400">
+                            <p class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-users-line text-blue-600 ml-2"></i>إدارة الذمم المدينة والدائنة</p>
+                            <p class="text-sm text-slate-600 mb-2">إدارة بيانات العملاء والموردين، وحدود الائتمان (Credit Limit)، وشروط الدفع.</p>
+                            <p><span class="highlight-item">نقطة التميُّز:</span> **إدارة المخاطر:** نظام تنبيه آلي عند تجاوز العميل حد الائتمان، مما يوقف إصدار فواتير جديدة.</p>
+                        </div>
+                        <!-- Item: الموظفين والموارد البشرية -->
+                        <div class="bg-gray-50 p-4 rounded-lg border-r-4 border-gray-400">
+                            <p class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-user-tie text-blue-600 ml-2"></i>الموظفين والموارد البشرية</p>
+                            <p class="text-sm text-slate-600 mb-2">سجل الموظفين، الرواتب، وربطها الآلي ببيانات الحضور والانصراف (Attendance System).</p>
+                            <p><span class="highlight-item">نقطة التميُّز:</span> **أتمتة الرواتب:** توليد قيود الأجور آلياً بناءً على كشوف الحضور الشهرية.</p>
+                        </div>
+                        <!-- Item: الأصول المادية ومعادلات الخلط -->
+                        <div class="bg-gray-50 p-4 rounded-lg border-r-4 border-gray-400">
+                            <p class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-industry-windows text-blue-600 ml-2"></i>الأصول المادية ومعادلات الخلط</p>
+                            <p class="text-sm text-slate-600 mb-2">تعريف المواد الخام، المنتج النهائي، وتحديد **معادلات الخلط** بنسبها (يجب أن تساوي $100\%$).</p>
+                            <p><span class="highlight-item">نقطة التميُّز:</span> **التحكم في التكلفة:** تحديد دقيق لتكلفة المنتج بناءً على نسب الخلطات ومتوسط التكلفة المرجح.</p>
+                        </div>
+                        <!-- Item: وحدات القياس -->
+                        <div class="bg-gray-50 p-4 rounded-lg border-r-4 border-gray-400 md:col-span-2">
+                            <p class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-weight-scale text-blue-600 ml-2"></i>وحدات القياس وطرق الدفع</p>
+                            <p class="text-sm text-slate-600 mb-2">تعريف جميع وحدات القياس (كجم، طن، قطعة) ومعدلات التحويل بينها وطرق القبض/الصرف.</p>
+                            <p><span class="highlight-item">نقطة التميُّز:</span> **المرونة المالية:** إمكانية دمج أكثر من طريقة دفع (نقد + شيك + تحويل) في سند واحد.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEW TAB: Tab 2: Production and Inventory Control (الإنتاج والمخزون) -->
+                <div id="tab-production-control" class="tab-content">
+                    <h3 class="text-2xl font-bold mb-6 text-slate-800 flex items-center"><i class="fas fa-boxes-packing ml-3 text-gray-500"></i>2. الإنتاج والمخزون (Production & Inventory Control)</h3>
+                    
+                    <!-- 1. إدارة المخزون والخامات -->
+                    <h4 class="text-xl font-bold mb-4 border-b pb-2 text-emerald-700 flex items-center"><i class="fas fa-warehouse ml-2"></i>1. إدارة المخزون والخامات (Real-Time Stock) 📦</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        
+                        <!-- 1. متابعة المخزون اللحظية -->
+                        <div class="bg-green-50 p-4 rounded-lg border-r-4 border-green-500">
+                            <p class="text-lg font-semibold mb-1 flex items-center"><i class="fas fa-eye text-green-800 ml-2"></i>متابعة المخزون اللحظية</p>
+                            <p class="text-sm text-slate-700">تتبع أرصدة الخامات والمنتج التام بشكل فوري (FIFO, LIFO, Weighted Average) واحتساب التكلفة آلياً.</p>
+                            <p class="mt-2 text-sm"><span class='highlight-item'>نقطة التميُّز:</span> **تقارير الركود (Obsolescence):** تقارير تحذر من الخامات التي لم تتحرك لفترة لتقليل خسائر الركود.</p>
+                        </div>
+                        
+                        <!-- 2. حد إعادة الطلب -->
+                        <div class="bg-green-50 p-4 rounded-lg border-r-4 border-green-500">
+                            <p class="text-lg font-semibold mb-1 flex items-center"><i class="fas fa-bell text-green-800 ml-2"></i>نظام تنبيهات حد إعادة الطلب (Reorder Point)</p>
+                            <p class="text-sm text-slate-700">تحديد حد أدنى لكل مادة خام. يرسل النظام تنبيهات فورية للشراء عند وصول الرصيد لهذا الحد.</p>
+                            <p class="mt-2 text-sm"><span class='highlight-item'>نقطة التميُّز:</span> **تجنب التعطيل:** ضمان توفر الخامات باستمرار لتجنب توقف خطوط الإنتاج بسبب النقص المفاجئ.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2. دورة الإنتاج والخلطات -->
+                    <h4 class="text-xl font-bold mb-4 border-b pb-2 text-emerald-700 flex items-center"><i class="fas fa-gears ml-2"></i>2. دورة الإنتاج المخصص (Spinning Specifics) ⚙️</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        
+                        <!-- 1. إنشاء الخلطات وتتبعها -->
+                        <div class="bg-blue-50 p-4 rounded-lg border-r-4 border-blue-500">
+                            <p class="text-lg font-semibold mb-1 flex items-center"><i class="fas fa-vials text-blue-800 ml-2"></i>إنشاء الخلطات (Recipes) وتتبعها</p>
+                            <p class="text-sm text-slate-700">تعريف عدد غير محدود من خلطات الغزل (مثل: $50\%$ قطن، $50\%$ بوليستر) لضمان اتساق جودة المنتج.</p>
+                            <p class="mt-2 text-sm"><span class='highlight-item'>نقطة التميُّز:</span> **انحراف التكلفة:** يحسب النظام الانحراف في التكلفة إذا اضطررت لاستخدام نسب خلطة مختلفة عن المعتمدة في أمر التشغيل.</p>
+                        </div>
+                        
+                        <!-- 2. تسجيل الإنتاج المتنوع وربطه بالماكينة -->
+                        <div class="bg-blue-50 p-4 rounded-lg border-r-4 border-blue-500">
+                            <p class="text-lg font-semibold mb-1 flex items-center"><i class="fas fa-gauge-high text-blue-800 ml-2"></i>تسجيل الإنتاج المتنوع وربطه بالماكينة</p>
+                            <p class="text-sm text-slate-700">تسجيل سهل وسريع لكافة أنواع الغزل المنتجة (مثل: 30s/1, 40s/1) مع تحديد **رقم الماكينة** (Machine ID) التي أنتجته.</p>
+                            <p class="mt-2 text-sm"><span class='highlight-item'>نقطة التميُّز:</span> **تحليل كفاءة الآلات:** تقارير تحلل إنتاجية كل ماكينة على حدة وتكاليفها مقارنة بالخطة الموضوعة (Variance Analysis).</p>
+                        </div>
+                        
+                        <!-- 3. تتبع الشكائر الفردية (Bag ID) -->
+                        <div class="bg-blue-50 p-4 rounded-lg border-r-4 border-blue-500">
+                            <p class="text-lg font-semibold mb-1 flex items-center"><i class="fas fa-barcode text-blue-800 ml-2"></i>تتبع الشكائر الفردية (Bag ID) - **ميزة الغزل**</p>
+                            <p class="text-sm text-slate-700">كل شكارة منتج تام تحصل على رقم تعريف فريد عند تسجيل الإنتاج ($ \text{Bag ID} $). يتم تسجيل الوزن الفعلي والجودة لهذا الـ $ \text{Bag ID} $.</p>
+                            <p class="mt-2 text-sm"><span class='highlight-item'>دقة الإدخال:</span> يضمن هذا التتبع عدم تكرار بيع الشكارة أو استخدامها مرة أخرى في قيد تكلفة البضاعة المباعة.</p>
+                        </div>
+                        
+                        <!-- 4. فواتير البيع السريعة (التي تعتمد على الـ Bag ID) -->
+                        <div class="bg-blue-50 p-4 rounded-lg border-r-4 border-blue-500">
+                            <p class="text-lg font-semibold mb-1 flex items-center"><i class="fas fa-money-bill-transfer text-blue-800 ml-2"></i>فواتير المبيعات السريعة والآمنة</p>
+                            <p class="text-sm text-slate-700">عند إنشاء فاتورة مبيعات، يتم اختيار الغزل المباع **بالـ $ \text{Bag ID} $** من قائمة المخزون التام المتوفر، مما يضمن دقة في الوزن والتكلفة.</p>
+                            <p class="mt-2 text-sm"><span class='highlight-item'>قيمة التتبع:</span> **الربط المحاسبي الفوري:** بمجرد اختيار $ \text{Bag ID} $، يتم سحب تكلفته آلياً وإصدار قيد تكلفة البضاعة المباعة (COGS) بناءً على التكلفة المرجحة الفعلية.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab 3: Treasury, Liquidity & Cheque Management (النقد والشيكات) -->
+                <div id="tab-financial-control" class="tab-content">
+                    <h3 class="text-2xl font-bold mb-6 text-slate-800 flex items-center"><i class="fas fa-hand-holding-dollar ml-3 text-gray-500"></i>3. النقد والشيكات (Cash & Cheque Management)</h3>
+                    
+                    
+                    <!-- 1. إدارة النقد، الخزينة، والتحويلات البنكية -->
+                    <h4 class="text-xl font-bold mb-4 border-b pb-2 text-blue-700 flex items-center"><i class="fas fa-vault ml-2"></i>1. عمليات النقد والصرف والتحصيل 🏦</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        
+                        <!-- 1. سند القبض (يشمل نقد وشيكات) -->
+                        <div class="bg-yellow-50 p-4 rounded-lg border-r-4 border-yellow-500">
+                            <p class="text-lg font-semibold mb-1 flex items-center"><i class="fas fa-arrow-down-to-square text-yellow-800 ml-2"></i>سند القبض والتحصيل</p>
+                            <p class="text-sm text-slate-700">توثيق استلام الأموال. يغطي: **النقدية، الشيكات قيد التحصيل، والتحويل البنكي الوارد**.</p>
+                            <p class="mt-2 text-sm"><span class="font-bold text-gray-800">الربط المالي:</span> مدين: حساب الأصول (النقدية / شيكات قيد التحصيل) / دائن: حساب العميل أو الإيرادات.</p>
+                            <p class="mt-2 text-sm"><span class='highlight-item'>نقطة التفصيل:</span> يتم ربط كل تحصيل بمركز تكلفة للمبيعات/العميل.</p>
+                        </div>
+                        
+                        <!-- 2. سند الصرف (يشمل نقد وشيكات) -->
+                        <div class="bg-red-50 p-4 rounded-lg border-r-4 border-red-500">
+                            <p class="text-lg font-semibold mb-1 flex items-center"><i class="fas fa-arrow-up-right-from-square text-red-800 ml-2"></i>سند الصرف والسداد</p>
+                            <p class="text-sm text-slate-700">توثيق سداد الأموال. يغطي: **النقدية، الشيكات الصادرة، والتحويل البنكي الصادر**.</p>
+                            <p class="mt-2 text-sm"><span class="font-bold text-gray-800">الربط المالي:</span> مدين: حساب الموردين أو المصروفات / دائن: حساب الأصول (البنك/الخزينة/شيكات الدفع).</p>
+                            <p class="mt-2 text-sm"><span class='highlight-item'>نقطة التفصيل:</span> يتم ربط كل دفع بمركز تكلفة أو حساب مورد محدد.</p>
+                        </div>
+                        
+                        <!-- 3. التحويل البنكي (الحركات الداخلية فقط) -->
+                        <div class="bg-blue-50 p-4 rounded-lg border-r-4 border-blue-500">
+                            <p class="text-lg font-semibold mb-1 text-blue-800 flex items-center"><i class="fas fa-arrow-right-arrow-left text-blue-800 ml-2"></i>3. تسوية التحويلات البنكية الداخلية</p>
+                            <p class="text-sm text-slate-700">توثيق الحركات **بين أصول الشركة** (البنوك/الخزائن).</p>
+                            <p class="mt-2 text-sm"><span class="font-bold text-gray-800">الربط المالي:</span> حركة بين حسابي أصول (لا تؤثر على الإيراد أو المصروف).</p>
+                            <p class="mt-2 text-sm"><span class='highlight-item'>نقطة التسوية:</span> يتم تفعيل حركة "تحت التسوية" مؤقتاً لضمان المطابقة البنكية الدقيقة.</p>
+                        </div>
+                    </div>
+
+
+                    <!-- 2. دورة إدارة الشيكات المتقدمة -->
+                    <h4 class="text-xl font-bold mb-4 border-b pb-2 text-blue-700 flex items-center"><i class="fas fa-money-check-pen ml-2"></i>2. إدارة الشيكات والتسوية الآلية 🛡️</h4>
+                    
+                    <p class="text-md text-slate-600 mb-6">يحل النظام مشكلة القيود اليدوية والمعقدة المرتبطة بالشيكات المرفوضة أو المرتدة عبر إنشاء حسابات تسوية مؤقتة يتم معالجتها آلياً.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                         <!-- 1. دفتر الشيكات المركزي -->
+                        <div class="bg-slate-100 p-4 rounded-lg shadow-inner border-r-4 border-blue-400">
+                            <p class="text-lg font-semibold mb-2 text-blue-800 flex items-center"><i class="fas fa-book-open text-blue-600 ml-2"></i>1. دفتر الشيكات المركزي (Central Registry)</p>
+                            <p class="text-sm text-slate-700 mb-2">سجل موحد لتتبع كافة الشيكات (الواردة والصادرة)، وتسجيل تواريخ الاستحقاق والتحصيل.</p>
+                            <p><span class="highlight-item">الميزة الرئيسية:</span> **رقابة الاستحقاق:** تنبيه آلي قبل 3 أيام من تاريخ استحقاق أي شيك لضمان توفر السيولة.</p>
+                        </div>
+                        <!-- 2. الشيكات المرفوضة (الواردة) -->
+                        <div class="bg-red-50 p-4 rounded-lg shadow-inner border-r-4 border-red-500">
+                            <p class="text-lg font-semibold mb-2 text-red-800 flex items-center"><i class="fas fa-ban text-red-600 ml-2"></i>2. معالجة الشيكات المرفوضة (الواردة)</p>
+                            <p class="text-sm text-slate-700 mb-2">إلغاء عملية التحصيل للشيكات المرفوضة لعدم كفاية الرصيد.</p>
+                            <p><span class="highlight-item">آلية التسوية:</span> **قيد عكس آلي فوري:** يرفع رصيد العميل مرة أخرى (مدين) ويخفض حساب الشيكات تحت التحصيل، مع توثيق سبب الرفض.</p>
+                        </div>
+                        <!-- 3. الشيكات المرتدة (الصادرة) -->
+                        <div class="bg-yellow-50 p-4 rounded-lg shadow-inner border-r-4 border-yellow-500">
+                            <p class="text-lg font-semibold mb-2 text-yellow-800 flex items-center"><i class="fas fa-rotate-left text-yellow-600 ml-2"></i>3. معالجة الشيكات المرتدة (الصادرة)</p>
+                            <p class="text-sm text-slate-700 mb-2">إلغاء عملية السداد السابقة للمورد بسبب ارتداد الشيك.</p>
+                            <p><span class="highlight-item">آلية التسوية:</span> **قيد عكس آلي فوري:** يزيد حساب البنك ويقلل حساب الموردين، لإعادة رصيد المورد إلى وضعه السابق.</p>
+                        </div>
+                        <!-- 4. تحليل التنبؤ بالسيولة (ميزة إضافية) -->
+                        <div class="bg-emerald-50 p-4 rounded-lg shadow-inner border-r-4 border-emerald-500 md:col-span-3">
+                            <p class="text-xl font-semibold mb-2 text-emerald-800 flex items-center"><i class="fas fa-chart-area text-emerald-600 ml-2"></i>4. تحليل التنبؤ بالسيولة (Liquidity Forecasting Analysis)</p>
+                            <p class="text-sm text-slate-700 mb-2">تقرير استراتيجي يدمج الأرصدة الحالية مع التدفقات النقدية المستقبلية المتوقعة (الشيكات الواردة - الشيكات الصادرة). يوفر نظرة مستقبلية دقيقة للمركز النقدي.</p>
+                            <p><span class="highlight-item">قيمة استراتيجية:</span> **تجنب التعثر:** يسمح للإدارة باتخاذ قرار سحب/إيداع مبكر لتجنب رفض الشيكات الصادرة أو مفاجآت السيولة.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab 4: General Ledger & Financial Statements (المالية والميزانية) -->
+                <div id="tab-accounting-structure" class="tab-content">
+                    <h3 class="text-2xl font-bold mb-6 text-slate-800 flex items-center"><i class="fas fa-balance-scale ml-3 text-gray-500"></i>4. المالية والميزانية (Financial Reporting & GL)</h3>
+                    
+                    <p class="text-md text-slate-600 mb-6">يُبنى نظام ديباج على دليل حسابات هرمي (5 مستويات) لضمان الدقة في إعداد التقارير المالية. الهيكل الختامي مصمم لضمان التوليد الآلي للقوائم المالية.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        
+                        <!-- 1000 - الأصول -->
+                        <div class="p-4 rounded-lg border-l-4 border-green-600 bg-green-50">
+                            <p class="text-lg font-bold text-green-800 flex items-center"><i class="fas fa-building-columns text-green-600 ml-2"></i>1000 - الأصول (Assets)</p>
+                            <ul class="list-disc list-inside text-sm text-slate-700 mt-2 space-y-1">
+                                <li>1100 الأصول المتداولة (النقدية، العملاء، المخزون)</li>
+                                <li>1200 الأصول الثابتة (مباني، آلات)</li>
+                            </ul>
+                            <p class="mt-2 text-xs font-semibold text-green-700">الربط: جميع قيود الشراء واستلام الأصول.</p>
+                        </div>
+
+                        <!-- 2000 - الالتزامات وحقوق الملكية -->
+                        <div class="p-4 rounded-lg border-l-4 border-red-600 bg-red-50">
+                            <p class="text-lg font-bold text-red-800 flex items-center"><i class="fas fa-handshake-angle text-red-600 ml-2"></i>2000 - الالتزامات وحقوق الملكية</p>
+                            <ul class="list-disc list-inside text-sm text-slate-700 mt-2 space-y-1">
+                                <li>2100 الالتزامات المتداولة (الموردون، شيكات الدفع)</li>
+                                <li>2200 الالتزامات طويلة الأجل (القروض)</li>
+                                <li>2300 حقوق الملكية (رأس المال، الأرباح المحتجزة)</li>
+                            </ul>
+                            <p class="mt-2 text-xs font-semibold text-red-700">الربط: جميع سندات الصرف والتحصيلات.</p>
+                        </div>
+
+                        <!-- 3000 - الإيرادات -->
+                        <div class="p-4 rounded-lg border-l-4 border-blue-600 bg-blue-50">
+                            <p class="text-lg font-bold text-blue-800 flex items-center"><i class="fas fa-sack-dollar text-blue-600 ml-2"></i>3000 - الإيرادات التشغيلية وغير التشغيلية</p>
+                            <ul class="list-disc list-inside text-sm text-slate-700 mt-2 space-y-1">
+                                <li>3100 إيرادات المبيعات (المنتجات تامة الصنع)</li>
+                                <li>3200 إيرادات أخرى (إيرادات فوائد، خصومات مكتسبة)</li>
+                            </ul>
+                            <p class="mt-2 text-xs font-semibold text-blue-700">الربط: قيد المبيعات وفاتورة المبيعات.</p>
+                        </div>
+                        
+                        <!-- 4000 - تكلفة المبيعات -->
+                        <div class="p-4 rounded-lg border-l-4 border-yellow-600 bg-yellow-50">
+                            <p class="text-lg font-bold text-yellow-800 flex items-center"><i class="fas fa-dolly text-yellow-600 ml-2"></i>4000 - تكلفة المبيعات (COGS)</p>
+                            <ul class="list-disc list-inside text-sm text-slate-700 mt-2 space-y-1">
+                                <li>4100 تكلفة المواد الخام المستخدمة</li>
+                                <li>4200 تكلفة المنتج التام المباع</li>
+                            </ul>
+                            <p class="mt-2 text-xs font-semibold text-yellow-700">الربط: قيد تكلفة البضاعة المباعة التلقائي.</p>
+                        </div>
+
+                        <!-- 5000 - المصروفات -->
+                        <div class="p-4 rounded-lg border-l-4 border-purple-600 bg-purple-50">
+                            <p class="text-lg font-bold text-purple-800 flex items-center"><i class="fas fa-file-invoice text-purple-600 ml-2"></i>5000 - المصروفات والإهلاك</p>
+                            <ul class="list-disc list-inside text-sm text-slate-700 mt-2 space-y-1">
+                                <li>5100 مصاريف التشغيل (كهرباء، ماء)</li>
+                                <li>5200 مصاريف إدارية وعمومية (رواتب، إيجارات)</li>
+                                <li>5300 مصروفات الإهلاك (Depreciation)</li>
+                            </ul>
+                            <p class="mt-2 text-xs font-semibold text-purple-700">الربط: سندات الصرف والمشتريات الخدمية وقيد الإهلاك الآلي.</p>
+                        </div>
+                        
+                        <!-- توليد التقارير المالية الختامية -->
+                        <div class="p-4 rounded-lg border-l-4 border-amber-600 bg-amber-50 md:col-span-1 lg:col-span-3">
+                             <p class="text-xl font-bold mb-2 text-amber-800 flex items-center"><i class="fas fa-hand-holding-box text-amber-600 ml-2"></i>توليد القوائم المالية الختامية</p>
+                             <p class="text-sm text-slate-700 mb-2">الهيكل الختامي لدليل الحسابات مصمم لضمان التوليد الآلي لـ **قائمة المركز المالي (Balance Sheet)** و **قائمة الدخل الشامل (Income Statement)** في أي وقت.</p>
+                             <p><span class="highlight-item">نقطة التميز:</span> **الإغلاق الآلي:** لا حاجة لقيود إغلاق يدوية. الأرباح والخسائر تُحسب لحظياً وتُرحل آلياً لحساب حقوق الملكية.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- كشف الحساب (تم نقله) -->
+                    <h4 class="text-xl font-bold mb-4 mt-6 border-b pb-2 text-blue-700 flex items-center"><i class="fas fa-magnifying-glass-chart ml-2"></i>📈 التقارير الرقابية الأساسية (كشف الحساب والأرصدة)</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <!-- ⭐️ تم التعديل هنا: كشف الحساب التحليلي -->
+                        <div class="bg-gray-50 p-4 rounded-lg border-r-4 border-blue-600/80">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-list-check text-blue-700 ml-2"></i>كشف الحساب التحليلي (Multi-Dimensional Analysis)</p>
+                            <p class="text-sm text-slate-700 mb-2">تقرير حركة الحسابات الدقيقة (General Ledger Movement) يوضح كل قيد (مدين/دائن). يدعم البحث والفرز بناءً على: رقم المرجع (الفاتورة/السند)، التاريخ، **ومركز التكلفة**.</p>
+                            <p><span class="highlight-item">القيمة المضافة:</span> **التحليل متعدد الأبعاد:** إمكانية عرض الحركة الخاصة بعميل/مورد معين ضمن **مركز تكلفة محدد**، بالإضافة إلى دعم خاصية **المطابقة الخارجية الآلية**.</p>
+                        </div>
+                        
+                        <!-- ميزان المراجعة (تم تحسينه قليلاً) -->
+                        <div class="bg-gray-50 p-4 rounded-lg border-r-4 border-gray-400">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-balance-scale-left text-blue-600 ml-2"></i>ميزان المراجعة التحليلي</p>
+                            <p class="text-sm text-slate-700 mb-2">تقرير يجمع أرصدة كافة الحسابات (الأرصدة الافتتاحية والحركات الدورية)، مما يضمن توازن المعادلة المحاسبية ($ \text{المدين} = \text{الدائن} $).</p>
+                            <p><span class="highlight-item">القيمة المضافة:</span> رقابة شاملة: كشف دقيق يغطي كافة تفاصيل الحركات لضمان خلو النظام من الأخطاء المالية قبل إعداد القوائم.</p>
+                        </div>
+                        
+                         <!-- ملخص الأرصدة التشغيلية (تم تحسينه قليلاً) -->
+                         <div class="bg-gray-50 p-4 rounded-lg border-r-4 border-gray-400">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-chart-pie text-blue-600 ml-2"></i>ملخص الأرصدة التشغيلية</p>
+                            <p class="text-sm text-slate-700 mb-2">عرض ملخص فوري لأرصدة مجموعات الحسابات الرئيسية (مثل إجمالي أرصدة العملاء، إجمالي المخزون، صافي الالتزامات).</p>
+                            <p><span class="highlight-item">القيمة المضافة:</span> نظرة سريعة للمدير: تمكين الإدارة العليا من اتخاذ قرارات سريعة بناءً على مؤشرات الأداء الرئيسية (KPIs) دون الحاجة لتقارير مفصلة.</p>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- Tab 5: Internal Control & Operational Resources (الموارد البشرية والمهام) -->
+                <div id="tab-management-reports" class="tab-content">
+                    <!-- ⭐️ تم تغيير العنوان هنا -->
+                    <h3 class="text-2xl font-bold mb-6 text-slate-800 flex items-center"><i class="fas fa-users-gear ml-3 text-gray-500"></i>5. الموارد البشرية والمهام (HR & Task Management)</h3>
+                    
+                    <!-- 1. دورة إدارة الموارد البشرية -->
+                    <h4 class="text-xl font-bold mb-4 border-b pb-2 text-emerald-700 flex items-center"><i class="fas fa-user-gear ml-2"></i>1. دورة إدارة الموارد البشرية والأجور 🧑‍💼</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                         
+                        <!-- إدارة الأجور وكشوف المرتبات -->
+                        <div class="bg-emerald-50 p-4 rounded-lg border-l-4 border-emerald-500">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-money-bill-transfer text-emerald-600 ml-2"></i>إدارة الأجور وكشوف المرتبات</p>
+                            <p class="text-sm text-slate-700 mb-2">إعداد كشوف الرواتب الشهرية، خصم الغياب، إضافة الحوافز، والربط مع نظام الحضور الآلي.</p>
+                            <p><span class="highlight-item">نقطة التميُّز:</span> **أتمتة القيود:** توليد قيود الأجور (المدين: المصروفات، الدائن: مستحقات الرواتب) آلياً، مع احتساب الاستقطاعات الحكومية.</p>
+                        </div>
+                        
+                        <!-- إدارة العهد والسلف -->
+                        <div class="bg-emerald-50 p-4 rounded-lg border-l-4 border-emerald-500">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-hand-holding-box text-emerald-600 ml-2"></i>إدارة العهد والسلف</p>
+                            <p class="text-sm text-slate-700 mb-2">تسجيل العهد النقدية والسلف الممنوحة للموظفين وتتبعها، مع تحديد تاريخ استحقاق التسوية.</p>
+                            <p><span class="highlight-item">نقطة التميُّز:</span> **رقابة التسوية:** عند تسوية العهدة بمصروف، يتم عمل القيد المحاسبي لإنهاء ذمة الموظف مقابل المصروف آلياً.</p>
+                        </div>
+
+                        <!-- إدارة المصروفات التشغيلية -->
+                        <div class="bg-emerald-50 p-4 rounded-lg border-l-4 border-emerald-500">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-file-signature text-emerald-600 ml-2"></i>إدارة الذمم والمصروفات التشغيلية</p>
+                            <p class="text-sm text-slate-700 mb-2">تسجيل جميع أنواع المصروفات (إدارية، تشغيلية) مع ربطها بمركز تكلفة محدد.</p>
+                            <p><span class="highlight-item">نقطة التميُّز:</span> **دورة اعتماد إلكترونية:** المصروف لا يُصرف إلا بعد اعتماد المدير المختص، لضمان الرقابة الداخلية.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 2. الرقابة على المهام والتنبيهات -->
+                    <h4 class="text-xl font-bold mb-4 border-b pb-2 text-blue-700 flex items-center"><i class="fas fa-bell-concierge ml-2"></i>2. الرقابة على المهام والتنبيهات (Tasks & Alerts) 📢</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+                        <!-- الشات والتنبيهات -->
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-bell text-blue-600 ml-2"></i>نظام التنبيهات وإدارة حالات العمل</p>
+                            <p class="text-sm text-slate-700 mb-2">نظام داخلي للمراسلة الفورية وتذاكر الدعم، مع تنبيهات عند حد إعادة الطلب، أو استحقاق الشيكات، أو تجاوز حد الائتمان للعميل.</p>
+                            <p><span class="highlight-item">القيمة للمدير:</span> **كفاءة العمليات:** سرعة التواصل وحل المشكلات التشغيلية وتجنب المخاطر المالية.</p>
+                        </div>
+
+                        <!-- سجل الرقابة (Audit Trail) -->
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-clipboard-list text-blue-600 ml-2"></i>سجل الرقابة الداخلية (Audit Trail)</p>
+                            <p class="text-sm text-slate-700 mb-2">تسجيل جميع التعديلات والحركات التي قام بها المستخدمون على النظام (من قام بالتعديل ومتى وماذا عدل). لا يمكن حذف أي قيد أو فاتورة.</p>
+                            <p><span class="highlight-item">نقطة التميُّز:</span> **النزاهة المالية:** ضمان عدم إمكانية التلاعب بالبيانات أو حذف السجلات المحاسبية لضمان النزاهة.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 3. تقارير ومؤشرات الأداء -->
+                    <h4 class="text-xl font-bold mb-4 border-b pb-2 text-amber-700 flex items-center"><i class="fas fa-chart-simple ml-2"></i>3. تقارير مؤشرات الموارد البشرية والرقابة 📊</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        <!-- تقارير كفاءة الموظفين -->
+                        <div class="bg-amber-50 p-4 rounded-lg border-r-4 border-amber-500">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-gauge-high text-amber-600 ml-2"></i>تقارير كفاءة الموظفين (Efficiency)</p>
+                            <p class="text-sm text-slate-700 mb-2">تحليل إنتاجية كل موظف إدخال (Input Clerk) وسرعة إنجازه للمهام (مثل: عدد فواتير المبيعات المدخلة شهرياً).</p>
+                            <p><span class="highlight-item">القيمة المضافة:</span> **تقييم الأداء:** ربط الحوافز والمكافآت بمؤشرات الأداء (KPIs) الواقعية المستخرجة من النظام.</p>
+                        </div>
+                        
+                        <!-- تحليل نسبة الدوران والتغيب -->
+                        <div class="bg-amber-50 p-4 rounded-lg border-r-4 border-amber-500">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-person-circle-xmark text-amber-600 ml-2"></i>تحليل نسبة الدوران والتغيب</p>
+                            <p class="text-sm text-slate-700 mb-2">احتساب نسبة دوران الموظفين (Turnover Rate) ونسبة التغيب الشهرية/السنوية، مع تحليل أسبابها الرئيسية.</p>
+                            <p><span class="highlight-item">القيمة المضافة:</span> **تخطيط القوى العاملة:** استخدام البيانات للتنبؤ بالاحتياج المستقبلي للموظفين وتحديد المشاكل الداخلية التي تسبب الدوران.</p>
+                        </div>
+                        
+                        <!-- تقرير المصروفات حسب مركز التكلفة -->
+                        <div class="bg-amber-50 p-4 rounded-lg border-r-4 border-amber-500">
+                            <p class="text-lg font-semibold mb-2 flex items-center"><i class="fas fa-chart-column text-amber-600 ml-2"></i>تقرير المصروفات حسب مركز التكلفة</p>
+                            <p class="text-sm text-slate-700 mb-2">عرض رسومي (Dashboards) للمصروفات التي تمت خلال الفترة، مقسمة حسب كل فرع أو قسم (مركز تكلفة).</p>
+                            <p><span class="highlight-item">القيمة المضافة:</span> **رقابة الميزانية:** تحديد الأقسام التي تجاوزت ميزانيتها المقدرة واتخاذ الإجراءات التصحيحية فوراً.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        
+        <!-- 💵 Section: Pricing (خطط الأسعار) -->
+        <section id="pricing" class="mb-20">
+            <h2 class="text-4xl font-black text-center mb-12 text-blue-900">
+                <span class="pb-2 border-b-4 border-amber-400/70 inline-block">
+                    💵 خطط الأسعار (Subscription Packages)
+                </span>
+            </h2>
+            <p class="text-center text-slate-600 mb-12 max-w-3xl mx-auto">
+                اختر الباقة التي تناسب حجم فريقك واحتياجات عملك لتبدأ رحلتك نحو التميُّز جميع الخطط تتضمن نسخة تجريبية مجانية.
+            </p>
+            
+            <!-- تم تعديل شبكة Tailwind لتضمين 4 أعمدة في الشاشات الكبيرة (XL) وعمودين في MD/LG -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
+                
+                <!-- Package 1: الشهرية (Monthly) -->
+                <div class="bg-white p-8 rounded-xl shadow-xl border-t-8 border-slate-400 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-3xl font-extrabولد text-slate-800 mb-2 text-center">الباقة الشهرية</h3>
+                        <p class="text-center text-slate-500 mb-6">مرونة قصوى لبداية سريعة</p>
+                        <div class="text-center mb-6">
+                            <span class="text-5xl font-black text-blue-700">199 $</span>
+                            <span class="text-xl text-slate-600">/ شهر</span>
+                        </div>
+                        
+                        <ul class="space-y-4 text-slate-700">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>وصول كامل لكافة الوحدات (Modules)</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>5 مستخدمين أساسيين</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>سعة تخزين بيانات: 50 جيجابايت</span></li>
+                            <li class="flex items-center text-red-500"><i class="fas fa-times-circle ml-3"></i><span>دعم فني على مدار الساعة (24/7)</span></li>
+                            <li class="flex items-center text-red-500"><i class="fas fa-times-circle ml-3"></i><span>تخصيص هيكل تقارير (Custom Reports)</span></li>
+                        </ul>
+                    </div>
+                    <button class="w-full mt-8 bg-slate-500 text-white font-bold py-3 rounded-lg hover:bg-slate-600 transition duration-300 shadow-md">ابدأ الآن</button>
+                </div>
+                
+                <!-- Package 2: السنوية (Annual) - RECOMMENDED -->
+                <div class="bg-white p-8 rounded-xl shadow-2xl border-t-8 border-emerald-600 flex flex-col justify-between">
+                    <div>
+                         <p class="text-center text-sm font-bold text-white bg-emerald-600 rounded-full px-3 py-1 mb-3 inline-block mx-auto">الباقة الموصى بها</p>
+                        <h3 class="text-3xl font-extrabولد text-slate-900 mb-2 text-center">الباقة السنوية</h3>
+                        <p class="text-center text-slate-500 mb-6">أفضل قيمة مقابل الثمن (خصم $20\% $)</p>
+                        <div class="text-center mb-6">
+                            <span class="text-5xl font-black text-emerald-700">1999 $</span>
+                            <span class="text-xl text-slate-600">/ سنة</span>
+                        </div>
+                        
+                        <ul class="space-y-4 text-slate-700">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>وصول كامل لكافة الوحدات (Modules)</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>**10 مستخدمين**</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>سعة تخزين بيانات: **150 جيجابايت**</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>دعم فني على مدار الساعة (24/7)</span></li>
+                            <li class="flex items-center text-red-500"><i class="fas fa-times-circle ml-3"></i><span>تخصيص هيكل تقارير (Custom Reports)</span></li>
+                        </ul>
+                    </div>
+                    <button class="w-full mt-8 bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition duration-300 shadow-lg">اشترك سنوياً</button>
+                </div>
+
+                <!-- Package 3: الدائمة (Perpetual/Lifetime) -->
+                <div class="bg-white p-8 rounded-xl shadow-xl border-t-8 border-amber-600 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-3xl font-extrabولد text-slate-800 mb-2 text-center">الباقة الدائمة (ترخيص دائم)</h3>
+                        <p class="text-center text-slate-500 mb-6">حلول المؤسسات الكبرى لمرة واحدة</p>
+                        <div class="text-center mb-6">
+                            <span class="text-5xl font-black text-amber-700">5999 $</span>
+                            <span class="text-xl text-slate-600">/ لمرة واحدة</span>
+                        </div>
+                        
+                        <ul class="space-y-4 text-slate-700">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>وصول كامل لكافة الوحدات (Modules)</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>**مستخدمين غير محدود**</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>سعة تخزين بيانات: **غير محدودة**</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>دعم فني على مدار الساعة (24/7)</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>**تخصيص هيكل تقارير (Custom Reports)**</span></li>
+                        </ul>
+                    </div>
+                    <button class="w-full mt-8 bg-amber-600 text-white font-bold py-3 rounded-lg hover:bg-amber-700 transition duration-300 shadow-md">اطلب الترخيص</button>
+                </div>
+                
+                <!-- NEW Package 4: الباقة المخصصة (Modular) -->
+                 <div class="bg-white p-8 rounded-xl shadow-2xl border-t-8 border-indigo-600 flex flex-col justify-between">
+                    <div>
+                         <p class="text-center text-sm font-bold text-white bg-indigo-600 rounded-full px-3 py-1 mb-3 inline-block mx-auto">أقصى درجات التخصيص</p>
+                        <h3 class="text-3xl font-extrabولد text-slate-900 mb-2 text-center">الباقة المخصصة</h3>
+                        <p class="text-center text-slate-500 mb-6">اختار وحداتك، ادفع حسب استخدامك</p>
+                        <div class="text-center mb-6">
+                            <span class="text-5xl font-black text-indigo-700">79 $</span>
+                            <span class="text-xl text-slate-600">/ موديول / شهر</span>
+                        </div>
+                        
+                        <ul class="space-y-4 text-slate-700">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>**حرية اختيار الموديلات (Modular)**</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>البدء بـ 3 مستخدمين أساسيين</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>إمكانية التوسع في التخزين</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>دعم فني مخصص (Tiered Support)</span></li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-emerald-500 ml-3"></i><span>**تخصيص هيكل تقارير (Custom Reports)**</span></li>
+                        </ul>
+                    </div>
+                    <button class="w-full mt-8 bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-lg">تواصل معنا للتخصيص</button>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 mt-16 border-t border-slate-200 bg-white">
+        <p class="text-slate-600 mb-1 font-medium">© 2025 | نظام ديباج المحاسبي | جميع الحقوق محفوظة</p>
+        <p class="text-slate-500 text-sm">تصميم: عبدالله حبيش | للتواصل: <span class="text-blue-600">01551148781</span></p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- SPA Navigation ---
+            const navLinks = document.querySelectorAll('a.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // --- Workflow Interactivity Content (Axis 2 Details) ---
+            const stepCards = document.querySelectorAll('.step-card');
+            const detailsPane = document.getElementById('workflow-details-pane');
+            
+            // NEW 6 Steps Data with better icons and descriptions
+            const stepData = {
+                procurement: {
+                    title: "1. تسجيل مشتريات الخامات (Procurement & Acceptance) 📦",
+                    description: "يتم توثيق فواتير شراء الخامات وتحديد طرق الدفع (آجل/نقدي) مع تحديد كمياتها وجودتها، مما يؤدي إلى زيادة رصيد مخزون الخامات.",
+                    impact: [
+                        "<strong>الإجراء التشغيلي:</strong> إصدار فاتورة شراء، تسجيل وزن الشحنة، وتحديد تكلفة الشراء المرجحة للخامات.",
+                        "<span class='workflow-highlight-item'>الربط التلقائي:</span> قيد الاستلام: مدين: يزيد حساب مخزون الخامات (الأصول) / دائن: يزيد رصيد الموردين (الالتزامات) أو ينقص حساب الخزانة."
+                    ]
+                },
+                production_order: {
+                    title: "2. أوامر التشغيل وتحديد الخلطة (Job Order & Formula Assignment) 🧪",
+                    description: "إصدار أمر تشغيل رسمي. يتم فيه تحديد الكمية المطلوبة من المنتج التام واختيار الخلطة (Recipe) المعتمدة التي تحدد نسب سحب المواد الخام من المخزن.",
+                    impact: [
+                        "<strong>الإجراء التشغيلي:</strong> تحديد نوع الغزل المطلوب إنتاجه (مثل: 40s/1) واختيار نسب الخلطة المحددة مسبقاً (BOM).",
+                        "<span class='workflow-highlight-item'>الربط التلقائي:</span> سحب التكلفة: مدين: يزيد حساب الإنتاج تحت التشغيل / دائن: يخفض حساب مخزون الخامات (سحب قيمة الخامات آلياً)."
+                    ]
+                },
+        
+                production_record: {
+                    title: "3. تسجيل الإنتاج وحساب التكلفة (Recording & Cost Calculation) 💰",
+                    description: "تسجيل الإنتاج الفعلي للشكاير بعد الانتهاء من دورة الماكينات. يتم فيه ربط كل شكارة برقم تعريف فريد (Bag ID) وبرقم الماكينة التي أنتجتها لحساب التكلفة بدقة.",
+                    impact: [
+                        "<strong>الإجراء التشغيلي:</strong> تسجيل كل Bag ID بالوزن الفعلي وتحديد رقم الماكينة (Machine ID) التي صنعتها لتقارير الكفاءة.",
+                        "<span class='workflow-highlight-item'>الربط التلقائي:</span> إضافة مخزون تام: مدين: يزيد حساب مخزون المنتج التام / دائن: يخفض حساب الإنتاج تحت التشغيل (ترحيل التكلفة المرجحة)."
+                    ]
+                },
+                sales: {
+                    title: "4. إنشاء فواتير المبيعات (Sales Invoice Generation) 🛒",
+                    description: "إنشاء فاتورة المبيعات بشكل سريع وآمن. يجب اختيار المنتج المباع عن طريق تحديد أرقام الشكاير (Bag ID) المتاحة في المخزون التام لضمان دقة الوزن والتكلفة.",
+                    impact: [
+                        "<strong>الإجراء التشغيلي:</strong> إصدار الفاتورة وتحديد Bag ID للشكاير المباعة.",
+                        "<span class='workflow-highlight-item'>قيد الإيراد:</span> مدين: العملاء/الخزانة / دائن: الإيرادات. <span class='workflow-highlight-item'>قيد التكلفة (COGS):</span> مدين: تكلفة المبيعات / دائن: مخزون المنتج التام."
+                    ]
+                },
+                 receipt_payment: {
+                    title: "5. سندات القبض والصرف (Receipts & Payments Vouchers) 💱",
+                    description: "توثيق كافة الحركات النقدية والشيكات (قبض من العملاء أو صرف للموردين). يشمل أيضاً التحويلات البنكية الداخلية لغرض التسوية.",
+                    impact: [
+                        "<strong>الإجراء التشغيلي:</strong> إنشاء سند قبض (تحصيل) أو سند صرف (سداد) وتحديد طريقة الدفع (نقد، شيك، تحويل).",
+                        "<span class='workflow-highlight-item'>الربط المالي:</span> حركة بين حسابات الأصول (الخزينة/البنك/الشيكات) وحسابات الذمم (العملاء/الموردين) أو الإيرادات/المصروفات."
+                    ]
+                },
+                expenses_payroll: {
+                    title: "6. المصروفات والرواتب (Expenses & Payroll Management) 💼",
+                    description: "إدارة المصروفات التشغيلية، وتسجيل العُهد والسُلف، وإعداد كشوف الرواتب الشهرية وقيودها المحاسبية التلقائية.",
+                    impact: [
+                        "<strong>الإجراء التشغيلي:</strong> تسجيل مصروف بربطه بمركز تكلفة ودورة اعتماد إلكترونية، أو توليد كشف الرواتب.",
+                        "<span class='workflow-highlight-item'>الربط المحاسبي:</span> مدين: حساب المصروفات / دائن: حساب الخزينة أو البنك أو مستحقات الرواتب."
+                    ]
+                }
+            };
+
+            function updateWorkflowDetails(step) {
+                if (!stepData[step]) return;
+
+                const data = stepData[step];
+                let impactHtml = data.impact.map(item => `<li class="flex items-start mb-3"><span class="flex-shrink-0 text-emerald-500 text-xl mt-1 ml-2">•</span><span>${item}</span></li>`).join('');
+                
+                detailsPane.innerHTML = `
+                    <h3 class="text-2xl font-bold mb-4 text-emerald-700">${data.title}</h3>
+                    <p class="text-slate-600 mb-6 text-lg">${data.description}</p>
+                    <h4 class="font-semibold mb-3 text-slate-900 border-b pb-2">التفاصيل والربط المحاسبي التلقائي:</h4>
+                    <ul class="space-y-2 text-slate-700 list-none">
+                        ${impactHtml}
+                    </ul>
+                `;
+
+                stepCards.forEach(card => {
+                    if (card.dataset.step === step) {
+                        card.classList.add('active');
+                    } else {
+                        card.classList.remove('active');
+                    }
+                });
+            }
+            
+            stepCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    updateWorkflowDetails(card.dataset.step);
+                });
+            });
+            
+            // Initialize with the first step
+            updateWorkflowDetails('procurement');
+
+            // --- Tabs Interactivity ---
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.dataset.tab;
+
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.classList.remove('border-blue-600');
+                        btn.classList.add('border-transparent');
+                        btn.classList.remove('text-blue-500');
+                        btn.classList.add('text-slate-500');
+                    });
+                    button.classList.add('active');
+                    button.classList.add('border-blue-600');
+                    button.classList.remove('text-slate-500');
+
+
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    const targetContent = document.getElementById(`tab-${targetTab}`);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+
+            // Initialize tabs - set 'master-data' as active initially
+            const initialTabButton = document.querySelector('.tab-button[data-tab="master-data"]');
+            if(initialTabButton) {
+                initialTabButton.click();
+            }
+
+        });
+    </script>
+</body>
+</html>
